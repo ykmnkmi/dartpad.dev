@@ -17,3 +17,11 @@ export const setupEditorWorker = () => {
     }
   }
 }
+
+export const enableDartLanguageService = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(null)
+    }, 1000)
+  })
+}

@@ -14,8 +14,8 @@ abstract class StandaloneCodeEditor {}
 
 @JS()
 @anonymous
-abstract class EditorOptions {
-  external factory EditorOptions({
+abstract class StandaloneCodeEditorOptions {
+  external factory StandaloneCodeEditorOptions({
     bool? automaticLayout,
     String? language,
     EditorMinimapOptions? minimap,
@@ -52,4 +52,4 @@ abstract class EditorMinimapOptions {
 
 @JS()
 external StandaloneCodeEditor createEditor(Element element,
-    [EditorOptions? options]);
+    [StandaloneCodeEditorOptions? options]);

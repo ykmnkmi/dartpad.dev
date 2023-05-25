@@ -101562,9 +101562,14 @@ const z0e = yM.create, U0e = yM.createModel, $0e = () => {
       return new Xme();
     }
   };
-};
+}, j0e = () => new Promise((o, e) => {
+  setTimeout(() => {
+    o(null);
+  }, 1e3);
+});
 export {
   z0e as createEditor,
   U0e as createModel,
+  j0e as enableDartLanguageService,
   $0e as setupEditorWorker
 };

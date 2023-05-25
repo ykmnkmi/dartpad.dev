@@ -7,7 +7,7 @@ import 'sample.dart' as sample;
 void main() {
   setupEditorWorker();
 
-  var editorOptions = EditorOptions(
+  var editorOptions = StandaloneCodeEditorOptions(
     automaticLayout: true,
     language: 'dart',
     scrollBeyondLastLine: false,
