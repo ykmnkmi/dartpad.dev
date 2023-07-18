@@ -10,15 +10,7 @@ interface ProvideHover {
   (model: editor.ITextModel, position: Position, token: CancellationToken): languages.ProviderResult<languages.Hover>
 }
 
-export const createEditor = (selector: string, options?: editor.IStandaloneEditorConstructionOptions): editor.IStandaloneCodeEditor | null => {
-  const domElement = document.querySelector(selector);
-
-  if (domElement instanceof HTMLElement) {
-    return editor.create(domElement, options)
-  }
-
-  return null;
-}
+export const createEditor = editor.create;
 
 export const createModel = editor.createModel
 
@@ -33,5 +25,3 @@ export const setupEditorWorker = () => {
 export const enableDartLanguageService = (provideHover: ProvideHover) => {
   return languages.registerHoverProvider('dart', { provideHover: provideHover })
 }
-
-export const log = console.log;

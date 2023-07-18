@@ -4,4 +4,5 @@ lib/assets/
 lib/**.js
 lib/**.css
 node_modules/
+package-lock.json
 pubspec.lock

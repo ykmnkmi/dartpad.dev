@@ -1,6 +1,8 @@
 @JS('dartpad')
 library;
 
+import 'dart:html' show HtmlElement;
+
 import 'package:js/js.dart';
 import 'package:meta/meta.dart';
 
@@ -54,7 +56,14 @@ extension PositionJS on Position {
 @staticInterop
 abstract final class StandaloneCodeEditor {}
 
-extension StandaloneCodeEditorJS on StandaloneCodeEditor {}
+extension StandaloneCodeEditorJS on StandaloneCodeEditor {
+  @JS('onDidChangeModelContent')
+  external void _onDidChangeModelContent(Function listener);
+
+  void onDidChangeModelContent(Listener<ModelContentChangedEvent> listener) {
+    _onDidChangeModelContent(allowInterop(listener));
+  }
+}
 
 @JS()
 @anonymous
@@ -100,6 +109,9 @@ abstract final class EditorMinimapOptions {
 abstract final class TextModel {}
 
 extension TextModelJS on TextModel {
+  @JS()
+  external String getValue();
+
   @JS('onDidChangeContent')
   external void _onDidChangeContent(Function listener);
 
@@ -124,8 +136,13 @@ extension ModelContentChangeJS on ModelContentChange {
 abstract final class ModelContentChangedEvent {}
 
 extension ModelContentChangedEventJS on ModelContentChangedEvent {
+  @JS('changes')
+  external List<dynamic> get _changes;
+
   @JS()
-  external List<ModelContentChange> get changes;
+  List<ModelContentChange> get changes {
+    return _changes.cast<ModelContentChange>();
+  }
 
   @JS()
   external int get versionId;
@@ -148,7 +165,7 @@ typedef ProvideHover = Hover? Function(
 
 @JS()
 external StandaloneCodeEditor createEditor(
-  String selector, [
+  HtmlElement selector, [
   StandaloneCodeEditorOptions? options,
 ]);
 
@@ -168,6 +185,3 @@ external Disposable _enableDartLanguageService(Function provideHover);
 Disposable enableDartLanguageService(ProvideHover provideHover) {
   return _enableDartLanguageService(allowInterop(provideHover));
 }
-
-@JS()
-external void log(Object? value);

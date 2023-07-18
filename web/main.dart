@@ -1,24 +1,35 @@
 // ignore_for_file: avoid_print
 
+import 'dart:html' show HtmlElement, document;
+
 import 'package:dartpad/dartpad.dart';
+import 'package:dartpad/sample.dart' as sample;
 
-import 'sample.dart' as sample;
+void main() {
+  var editorElement = document.querySelector('#editor');
 
-Future<void> main() async {
+  if (editorElement is! HtmlElement) {
+    return;
+  }
+
   setupEditorWorker();
+
+  var model = createModel(sample.value, 'dart');
 
   var editorOptions = StandaloneCodeEditorOptions(
     automaticLayout: true,
-    language: 'dart',
+    model: model,
     scrollBeyondLastLine: false,
     tabSize: 2,
-    value: sample.value,
   );
 
-  createEditor('#editor', editorOptions);
+  var editor = createEditor(editorElement, editorOptions);
+
+  editor.onDidChangeModelContent((event) {
+    print('editor: ${event.versionId}');
+  });
 
   enableDartLanguageService((model, position, token) {
-    print((position.lineNumber, position.column));
     return null;
   });
 }
