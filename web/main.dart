@@ -1,10 +1,10 @@
-import 'dart:html';
+// ignore_for_file: avoid_print
 
 import 'package:dartpad/dartpad.dart';
 
 import 'sample.dart' as sample;
 
-void main() {
+Future<void> main() async {
   setupEditorWorker();
 
   var editorOptions = StandaloneCodeEditorOptions(
@@ -15,5 +15,10 @@ void main() {
     value: sample.value,
   );
 
-  createEditor(document.querySelector('#editor')!, editorOptions);
+  createEditor('#editor', editorOptions);
+
+  enableDartLanguageService((model, position, token) {
+    print((position.lineNumber, position.column));
+    return null;
+  });
 }

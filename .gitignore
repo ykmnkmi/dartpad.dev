@@ -4,3 +4,4 @@ lib/assets/
 lib/**.js
 lib/**.css
 node_modules/
+pubspec.lock
