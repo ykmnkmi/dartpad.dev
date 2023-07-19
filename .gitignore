@@ -1,8 +1,8 @@
 .dart_tool/
 build/
-lib/assets/
-lib/**.js
-lib/**.css
 node_modules/
+web/assets/
+web/**.js
+web/**.css
 package-lock.json
 pubspec.lock

@@ -101356,7 +101356,7 @@ Yme({
   loader: () => import("./assets/dart.js")
 });
 function Xme() {
-  return new Worker("/packages/dartpad/assets/editor.worker.js");
+  return new Worker("" + new URL("assets/editor.worker.js", import.meta.url).href);
 }
 const z0e = yM.create, U0e = yM.createModel, $0e = () => {
   self.MonacoEnvironment = {

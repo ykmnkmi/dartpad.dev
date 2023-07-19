@@ -713,7 +713,7 @@ ${e.toString()}`}}class GS{constructor(e=new bC,t=!1,i,n=Afe){var s;this._servic
  * Version: 0.38.0(0e330ae453813de4e6cf272460fb79c7117073d0)
  * Released under the MIT license
  * https://github.com/microsoft/monaco-editor/blob/main/LICENSE.txt
- *-----------------------------------------------------------------------------*/Wme({id:"dart",extensions:[".dart"],aliases:["Dart","dart"],mimetypes:["text/x-dart-source","text/x-dart"],loader:()=>Promise.resolve().then(()=>qme)});function Vme(){return new Worker("/packages/dartpad/assets/editor.worker.js")}const Hme=aM.create,zme=aM.createModel,Ume=()=>{self.MonacoEnvironment={getWorker(o,e){return new Vme}}},$me=o=>T6.registerHoverProvider("dart",{provideHover:o});/*!-----------------------------------------------------------------------------
+ *-----------------------------------------------------------------------------*/Wme({id:"dart",extensions:[".dart"],aliases:["Dart","dart"],mimetypes:["text/x-dart-source","text/x-dart"],loader:()=>Promise.resolve().then(()=>qme)});function Vme(){return new Worker(""+(typeof document>"u"&&typeof location>"u"?require("url").pathToFileURL(__dirname+"/assets/editor.worker.js").href:new URL("assets/editor.worker.js",typeof document>"u"?location.href:document.currentScript&&document.currentScript.src||document.baseURI).href))}const Hme=aM.create,zme=aM.createModel,Ume=()=>{self.MonacoEnvironment={getWorker(o,e){return new Vme}}},$me=o=>T6.registerHoverProvider("dart",{provideHover:o});/*!-----------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Version: 0.38.0(0e330ae453813de4e6cf272460fb79c7117073d0)
  * Released under the MIT license

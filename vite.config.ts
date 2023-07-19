@@ -2,10 +2,10 @@ import { resolve } from "path"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  base: "packages/dartpad",
+  base: "",
   build: {
     emptyOutDir: false,
-    outDir: "lib",
+    outDir: "web",
     lib: {
       entry: resolve(__dirname, "src/dartpad.ts"),
       name: "dartpad",

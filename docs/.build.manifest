@@ -1,5 +1,10 @@
 .dart_tool/package_config.json
 .packages
+assets/dart.js
+assets/editor.worker.js
+assets/style.css
+dartpad.es.js
+dartpad.umd.js
 index.html
 main.dart.js
 packages/$sdk/dev_compiler/amd/require.js
@@ -13,11 +18,6 @@ packages/build_runner/src/server/graph_viz.html
 packages/build_runner/src/server/graph_viz.js
 packages/build_runner/src/server/graph_viz_main.dart.js
 packages/build_web_compilers/src/dev_compiler_stack_trace/stack_trace_mapper.dart.js
-packages/dartpad/assets/dart.js
-packages/dartpad/assets/editor.worker.js
-packages/dartpad/assets/style.css
-packages/dartpad/dartpad.es.js
-packages/dartpad/dartpad.umd.js
 packages/lints/core.yaml
 packages/lints/recommended.yaml
 styles.css
