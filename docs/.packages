@@ -20,6 +20,7 @@ code_builder:packages/code_builder/
 collection:packages/collection/
 convert:packages/convert/
 crypto:packages/crypto/
+dart_internal:packages/dart_internal/
 dart_style:packages/dart_style/
 dartpad:packages/dartpad/
 file:packages/file/
@@ -27,6 +28,7 @@ fixnum:packages/fixnum/
 frontend_server_client:packages/frontend_server_client/
 glob:packages/glob/
 graphs:packages/graphs/
+http:packages/http/
 http_multi_server:packages/http_multi_server/
 http_parser:packages/http_parser/
 io:packages/io/

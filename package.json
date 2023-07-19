@@ -3,8 +3,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:main": "dart compile js --lax-runtime-type-to-string --omit-late-names --no-native-null-assertions --omit-implicit-checks --trust-primitives --omit-as-casts --output=docs/main.dart.js web/main.dart",
-    "build:analyzer": "dart compile js --lax-runtime-type-to-string --omit-late-names --no-native-null-assertions --omit-implicit-checks --trust-primitives --omit-as-casts --output=docs/analyzer.dart.js web/analyzer.dart"
+    "build:dart": "dart compile js --lax-runtime-type-to-string --omit-late-names --no-native-null-assertions --omit-implicit-checks --trust-primitives --omit-as-casts --output=docs/main.dart.js web/main.dart"
   },
   "devDependencies": {
     "monaco-editor": "^0.38.0",
