@@ -2,7 +2,7 @@ import { resolve } from "path"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  base: "/packages/dartpad",
+  base: "packages/dartpad",
   build: {
     emptyOutDir: false,
     outDir: "lib",
