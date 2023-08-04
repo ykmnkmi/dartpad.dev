@@ -1,4 +1,4 @@
-import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_js/file_system/file_system.dart';
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 import 'package:http/http.dart' as http show readBytes;
 

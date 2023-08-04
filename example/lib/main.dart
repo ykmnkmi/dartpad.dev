@@ -1,6 +1,6 @@
-const String value = r'''
 import 'dart:math' show Random;
 
+/// Main [Function].
 Future<void> main() async {
   print('Compute π using the Monte Carlo method.');
 
@@ -9,7 +9,7 @@ Future<void> main() async {
   }
 }
 
-/// Generates a stream of increasingly accurate estimates of π.
+/// Generates a [Stream] of increasingly accurate estimates of π.
 Stream<double> computePi({int batch = 100000}) async* {
   var total = 0; // Inferred to be of type int
   var count = 0;
@@ -47,4 +47,3 @@ extension on Point {
     return x * x + y * y <= 1;
   }
 }
-''';

@@ -1,12 +1,12 @@
-import 'dart:io' show Directory, File;
+import 'dart:io' show Directory, File, Platform;
 
 import 'package:archive/archive_io.dart' show BZip2Encoder, TarFileEncoder;
-import 'package:path/path.dart' show join, relative;
+import 'package:path/path.dart' show dirname, join, relative;
 
 import 'types.dart';
 
 Future<void> main(List<String> arguments) async {
-  var sdkPath = join('..', '.sdk');
+  var sdkPath = dirname(dirname(Platform.executable));
   var libPath = join(sdkPath, 'lib');
 
   var lib = Directory(libPath);
