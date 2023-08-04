@@ -1,5 +1,7 @@
 .dart_tool/package_config.json
 .packages
+archives/app.tar.bz
+archives/sdk.tar.bz
 assets/dart.js
 assets/editor.worker.js
 assets/style.css
@@ -12,6 +14,8 @@ packages/$sdk/dev_compiler/web/dart_stack_trace_mapper.js
 packages/_fe_analyzer_shared/src/parser/parser.md
 packages/analyzer/fix_data.yaml
 packages/analyzer/src/summary/format.fbs
+packages/analyzer_js/fix_data.yaml
+packages/analyzer_js/src/summary/format.fbs
 packages/build_runner/src/server/README.md
 packages/build_runner/src/server/build_updates_client/live_reload_client.js
 packages/build_runner/src/server/graph_viz.html

@@ -2,11 +2,37 @@
 
 html,
 body,
-#editor {
+#editor,
+#loading {
   height: 100%;
   width: 100%;
 }
 
 body {
   margin: 0;
+  overflow: hidden;
+}
+
+#editor,
+#loading {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#loading {
+  align-items: center;
+  background-color: #FFFFFFC0;
+  color: black;
+  display: flex;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 14px;
+  font-variation-settings: normal;
+  font-weight: 400;
+  justify-content: center;
+  letter-spacing: normal;
+  line-height: 19px;
+  white-space: nowrap
 }

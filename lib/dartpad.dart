@@ -1,8 +1,9 @@
 @JS('dartpad')
 library;
 
-import 'dart:html' show HtmlElement;
+import 'dart:html' show Element;
 
+import 'package:dartpad/src/promise.dart';
 import 'package:js/js.dart';
 import 'package:meta/meta.dart';
 
@@ -38,12 +39,21 @@ extension CancellationTokenJS on CancellationToken {
   }
 }
 
+// 438
+@JS()
+@anonymous
+abstract final class MarkdownString {
+  external factory MarkdownString({String? value});
+}
+
+extension JSMarkdownString on MarkdownString {}
+
 // 514
 @JS()
 @staticInterop
 abstract final class Position {}
 
-extension PositionJS on Position {
+extension JSPosition on Position {
   @JS()
   external int get lineNumber;
 
@@ -56,7 +66,7 @@ extension PositionJS on Position {
 @staticInterop
 abstract final class StandaloneCodeEditor {}
 
-extension StandaloneCodeEditorJS on StandaloneCodeEditor {
+extension JSStandaloneCodeEditor on StandaloneCodeEditor {
   @JS('onDidChangeModelContent')
   external void _onDidChangeModelContent(Function listener);
 
@@ -110,6 +120,9 @@ abstract final class TextModel {}
 
 extension TextModelJS on TextModel {
   @JS()
+  external int getOffsetAt(Position position);
+
+  @JS()
   external String getValue();
 
   @JS('onDidChangeContent')
@@ -150,14 +163,16 @@ extension ModelContentChangedEventJS on ModelContentChangedEvent {
 
 // 6614
 @JS()
-@staticInterop
-abstract final class Hover {}
+@anonymous
+abstract final class Hover {
+  external factory Hover({List<MarkdownString>? contents});
+}
 
 extension HoverJS on Hover {}
 
 // dartpad.ts
 
-typedef ProvideHover = Hover? Function(
+typedef ProvideHover = Future<Hover?> Function(
   TextModel model,
   Position position,
   CancellationToken token,
@@ -165,7 +180,7 @@ typedef ProvideHover = Hover? Function(
 
 @JS()
 external StandaloneCodeEditor createEditor(
-  HtmlElement selector, [
+  Element selector, [
   StandaloneCodeEditorOptions? options,
 ]);
 
@@ -180,8 +195,16 @@ external TextModel createModel(
 external void setupEditorWorker();
 
 @JS('enableDartLanguageService')
-external Disposable _enableDartLanguageService(Function provideHover);
+external void _enableDartLanguageService(Function provideHover);
 
-Disposable enableDartLanguageService(ProvideHover provideHover) {
-  return _enableDartLanguageService(allowInterop(provideHover));
+void enableDartLanguageService(ProvideHover provideHover) {
+  return _enableDartLanguageService(allowInterop((
+    TextModel model,
+    Position position,
+    CancellationToken token,
+  ) {
+    return Promise(allowInterop((resolve, reject) {
+      provideHover(model, position, token).then(resolve, onError: reject);
+    }));
+  }));
 }

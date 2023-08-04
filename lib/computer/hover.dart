@@ -8,9 +8,11 @@ import 'package:analyzer_js/dart/ast/ast.dart';
 import 'package:analyzer_js/dart/ast/syntactic_entity.dart';
 import 'package:analyzer_js/dart/element/element.dart';
 import 'package:analyzer_js/dart/element/type.dart';
+import 'package:analyzer_js/source/line_info.dart';
 import 'package:analyzer_js/src/dart/ast/element_locator.dart';
 import 'package:analyzer_js/src/dart/ast/utilities.dart';
 import 'package:analyzer_js/src/dartdoc/dartdoc_directive_info.dart';
+import 'package:dartpad/computer/dartdoc.dart';
 import 'package:path/path.dart' as path;
 
 enum DocumentationPreference {
@@ -35,7 +37,7 @@ class DartUnitHoverComputer {
 
   final DocumentationPreference documentationPreference;
 
-  HoverInformation? compute() {
+  String? compute() {
     var node = NodeLocator(offset).searchWithin(unit);
 
     if (node == null) {
@@ -162,7 +164,7 @@ class DartUnitHoverComputer {
           }
         }
 
-        hover.dartdoc = computePreferredDocumentation(dartdocInfo, element, documentationPreference);
+        hover.documentation = computePreferredDocumentation(dartdocInfo, element, documentationPreference);
       }
 
       if (node is Expression) {
@@ -189,7 +191,7 @@ class DartUnitHoverComputer {
       }
 
       hover.staticType = typeDisplayString(staticType);
-      return hover;
+      return toHover(unit.lineInfo, hover);
     }
 
     // not an expression
@@ -202,6 +204,63 @@ class DartUnitHoverComputer {
 
   String? typeDisplayString(DartType? type) {
     return type?.getDisplayString(withNullability: true);
+  }
+
+  String? toHover(LineInfo lineInfo, HoverInformation? hover) {
+    if (hover == null) {
+      return null;
+    }
+
+    // Import prefix tooltips are not useful currently.
+    // https://github.com/dart-lang/sdk/issues/32735
+    if (hover.elementKind == 'import prefix') {
+      return null;
+    }
+
+    var content = StringBuffer();
+
+    // Description + Types.
+    var elementDescription = hover.elementDescription;
+    var staticType = hover.staticType;
+    var isDeprecated = hover.isDeprecated ?? false;
+
+    if (elementDescription != null) {
+      content.writeln('```dart');
+
+      if (isDeprecated) {
+        content.write('(deprecated) ');
+      }
+
+      content
+        ..writeln(elementDescription)
+        ..writeln('```');
+    }
+
+    if (staticType != null) {
+      content
+        ..writeln('Type: `$staticType`')
+        ..writeln();
+    }
+
+    // Source library.
+    var containingLibraryName = hover.containingLibraryName;
+
+    if (containingLibraryName != null && containingLibraryName.isNotEmpty) {
+      content
+        ..writeln('*$containingLibraryName*')
+        ..writeln();
+    }
+
+    // Doc comments.
+    if (hover.documentation != null) {
+      if (content.length != 0) {
+        content.writeln('---');
+      }
+
+      content.writeln(cleanDocumentation(hover.documentation));
+    }
+
+    return content.toString().trimRight();
   }
 
   static Documentation? computeDocumentation(
@@ -327,7 +386,7 @@ class HoverInformation {
 
   String? containingLibraryPath;
 
-  String? dartdoc;
+  String? documentation;
 
   String? parameter;
 

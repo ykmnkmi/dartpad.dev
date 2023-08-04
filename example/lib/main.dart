@@ -1,6 +1,5 @@
 import 'dart:math' show Random;
 
-/// Main [Function].
 Future<void> main() async {
   print('Compute π using the Monte Carlo method.');
 

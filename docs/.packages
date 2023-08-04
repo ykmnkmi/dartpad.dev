@@ -1,5 +1,6 @@
 _fe_analyzer_shared:packages/_fe_analyzer_shared/
 analyzer:packages/analyzer/
+analyzer_js:packages/analyzer_js/
 archive:packages/archive/
 args:packages/args/
 async:packages/async/
