@@ -1,11 +1,12 @@
 @JS('dartpad')
 library;
 
-import 'dart:html' show Element;
+import 'dart:js_interop';
+import 'dart:js_util';
 
 import 'package:dartpad/src/promise.dart';
-import 'package:js/js.dart';
 import 'package:meta/meta.dart';
+import 'package:web/web.dart';
 
 @optionalTypeArgs
 typedef Listener<T> = void Function(T event);
@@ -15,7 +16,7 @@ typedef Listener<T> = void Function(T event);
 // 32
 @JS()
 @staticInterop
-abstract final class Disposable {}
+final class Disposable {}
 
 extension DisposableJS on Disposable {
   @JS()
@@ -25,7 +26,7 @@ extension DisposableJS on Disposable {
 // 69
 @JS()
 @staticInterop
-abstract final class CancellationToken {}
+final class CancellationToken {}
 
 extension CancellationTokenJS on CancellationToken {
   @JS()
@@ -42,7 +43,8 @@ extension CancellationTokenJS on CancellationToken {
 // 438
 @JS()
 @anonymous
-abstract final class MarkdownString {
+@staticInterop
+final class MarkdownString {
   external factory MarkdownString({String? value});
 }
 
@@ -51,7 +53,7 @@ extension JSMarkdownString on MarkdownString {}
 // 514
 @JS()
 @staticInterop
-abstract final class Position {}
+final class Position {}
 
 extension JSPosition on Position {
   @JS()
@@ -64,7 +66,7 @@ extension JSPosition on Position {
 // 1396
 @JS()
 @staticInterop
-abstract final class StandaloneCodeEditor {}
+final class StandaloneCodeEditor {}
 
 extension JSStandaloneCodeEditor on StandaloneCodeEditor {
   @JS('onDidChangeModelContent')
@@ -77,7 +79,8 @@ extension JSStandaloneCodeEditor on StandaloneCodeEditor {
 
 @JS()
 @anonymous
-abstract final class StandaloneCodeEditorOptions {
+@staticInterop
+final class StandaloneCodeEditorOptions {
   external factory StandaloneCodeEditorOptions({
     bool? automaticLayout,
     String? language,
@@ -87,36 +90,21 @@ abstract final class StandaloneCodeEditorOptions {
     int? tabSize,
     String? value,
   });
-
-  external bool? get automaticLayout;
-
-  external String? get language;
-
-  external EditorMinimapOptions? get minimap;
-
-  external TextModel? get model;
-
-  external bool? get scrollBeyondLastLine;
-
-  external int? get tabSize;
-
-  external String? get value;
 }
 
 @JS()
 @anonymous
-abstract final class EditorMinimapOptions {
+@staticInterop
+final class EditorMinimapOptions {
   external factory EditorMinimapOptions({
     bool? enabled,
   });
-
-  external bool? get enabled;
 }
 
 // 1897
 @JS()
 @staticInterop
-abstract final class TextModel {}
+final class TextModel {}
 
 extension TextModelJS on TextModel {
   @JS()
@@ -136,7 +124,7 @@ extension TextModelJS on TextModel {
 // 2930
 @JS()
 @staticInterop
-abstract final class ModelContentChange {}
+final class ModelContentChange {}
 
 extension ModelContentChangeJS on ModelContentChange {
   @JS()
@@ -146,13 +134,12 @@ extension ModelContentChangeJS on ModelContentChange {
 // 2952
 @JS()
 @staticInterop
-abstract final class ModelContentChangedEvent {}
+final class ModelContentChangedEvent {}
 
 extension ModelContentChangedEventJS on ModelContentChangedEvent {
   @JS('changes')
   external List<dynamic> get _changes;
 
-  @JS()
   List<ModelContentChange> get changes {
     return _changes.cast<ModelContentChange>();
   }
@@ -164,11 +151,10 @@ extension ModelContentChangedEventJS on ModelContentChangedEvent {
 // 6614
 @JS()
 @anonymous
-abstract final class Hover {
+@staticInterop
+final class Hover {
   external factory Hover({List<MarkdownString>? contents});
 }
-
-extension HoverJS on Hover {}
 
 // dartpad.ts
 

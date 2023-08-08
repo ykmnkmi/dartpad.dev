@@ -29,7 +29,6 @@ fixnum:packages/fixnum/
 frontend_server_client:packages/frontend_server_client/
 glob:packages/glob/
 graphs:packages/graphs/
-http:packages/http/
 http_multi_server:packages/http_multi_server/
 http_parser:packages/http_parser/
 io:packages/io/
@@ -61,6 +60,7 @@ test_api:packages/test_api/
 timing:packages/timing/
 typed_data:packages/typed_data/
 watcher:packages/watcher/
+web:packages/web/
 web_socket_channel:packages/web_socket_channel/
 yaml:packages/yaml/
 $sdk:packages/$sdk/

@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'dart:html' show Element, document, window;
+import 'dart:js_interop';
 
 import 'package:analyzer_js/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer_js/dart/analysis/results.dart';
@@ -14,6 +14,7 @@ import 'package:dartpad/dartpad.dart';
 import 'package:dartpad/init/app.dart';
 import 'package:dartpad/init/sdk.dart';
 import 'package:path/path.dart' as path show posix;
+import 'package:web/web.dart';
 
 Future<void> main() async {
   var loadingElement = document.querySelector('#loading') as Element;
@@ -80,7 +81,7 @@ Future<void> main() async {
 
       if (resolvedUnit is ResolvedUnitResult) {
         if (resolvedUnit.errors case [var first, ...]) {
-          window.console.error(first.message);
+          console.error(first.message.toJS);
           return null;
         }
 

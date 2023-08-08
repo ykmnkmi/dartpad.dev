@@ -1,12 +1,19 @@
+import 'dart:js_interop';
+
 import 'package:analyzer_js/file_system/file_system.dart';
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
-import 'package:http/http.dart' as http show readBytes;
+import 'package:web/web.dart';
 
 Future<Folder> initApp(ResourceProvider resourceProvider) async {
-  var app = resourceProvider.getFolder('/app');
-  var bytes = await http.readBytes(Uri(path: 'archives/app.tar.bz'));
+  var responsePromise = window.fetch('archives/app.tar.bz'.toJS);
+  var response = await (responsePromise.toDart as Future<Response>);
+  var bufferPromise = response.arrayBuffer();
+  var buffer = await (bufferPromise.toDart as Future<JSArrayBuffer>);
+  var bytes = buffer.toDart.asUint8List();
   var tarBytes = BZip2Decoder().decodeBytes(bytes);
   var archive = TarDecoder().decodeBytes(tarBytes);
+
+  var app = resourceProvider.getFolder('/app');
 
   for (var archiveFile in archive.files) {
     if (archiveFile.isFile) {
