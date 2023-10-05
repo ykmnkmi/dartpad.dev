@@ -1,8 +1,6 @@
 .dart_tool/
 build/
 node_modules/
-web/assets/
-web/**.js
-web/**.css
+src/dartWorker.*
 package-lock.json
 pubspec.lock

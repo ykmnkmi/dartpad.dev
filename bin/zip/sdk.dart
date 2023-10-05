@@ -13,7 +13,7 @@ Future<void> main(List<String> arguments) async {
   var entities = lib.listSync(recursive: true);
 
   var tar = TarFileEncoder();
-  var tarPath = 'web/archives/sdk.tar';
+  var tarPath = 'src/archives/sdk.tar';
   tar.create(tarPath);
 
   var versionPath = join(sdkPath, 'version');

@@ -1,13 +1,14 @@
 {
   "name": "dartpad",
-  "type": "module",
   "scripts": {
-    "build": "vite build",
-    "build:dart": "dart compile js --lax-runtime-type-to-string --omit-late-names --no-native-null-assertions --omit-implicit-checks --trust-primitives --omit-as-casts --output=docs/main.dart.js web/main.dart"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:dart": "dart compile js --minify --lax-runtime-type-to-string --omit-late-names --omit-implicit-checks --trust-primitives --server-mode --output=src/dartWorker.js lib/worker.dart",
+    "build:dart:dev": "dart compile js --enable-asserts --disable-inlining --server-mode --output=src/dartWorker.js lib/worker.dart"
   },
   "devDependencies": {
     "monaco-editor": "^0.38.0",
-    "typescript": "^5.0.4",
-    "vite": "^4.3.8"
+    "typescript": "^5.2.2",
+    "vite": "^4.4.10"
   }
 }

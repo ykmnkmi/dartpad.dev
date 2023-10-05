@@ -4,15 +4,14 @@
 
 // ignore_for_file: implementation_imports
 
-import 'package:analyzer_js/dart/ast/ast.dart';
-import 'package:analyzer_js/dart/ast/syntactic_entity.dart';
-import 'package:analyzer_js/dart/element/element.dart';
-import 'package:analyzer_js/dart/element/type.dart';
-import 'package:analyzer_js/source/line_info.dart';
-import 'package:analyzer_js/src/dart/ast/element_locator.dart';
-import 'package:analyzer_js/src/dart/ast/utilities.dart';
-import 'package:analyzer_js/src/dartdoc/dartdoc_directive_info.dart';
-import 'package:dartpad/computer/dartdoc.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/syntactic_entity.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/source/line_info.dart';
+import 'package:analyzer/src/dart/ast/element_locator.dart';
+import 'package:analyzer/src/dart/ast/utilities.dart';
+import 'package:analyzer/src/dartdoc/dartdoc_directive_info.dart';
 import 'package:path/path.dart' as path;
 
 enum DocumentationPreference {
@@ -26,7 +25,7 @@ class DartUnitHoverComputer {
     this.dartdocInfo,
     this.unit,
     this.offset, {
-    this.documentationPreference = DocumentationPreference.full,
+    this.preference = DocumentationPreference.full,
   });
 
   final DartdocDirectiveInfo dartdocInfo;
@@ -35,7 +34,7 @@ class DartUnitHoverComputer {
 
   final int offset;
 
-  final DocumentationPreference documentationPreference;
+  final DocumentationPreference preference;
 
   String? compute() {
     var node = NodeLocator(offset).searchWithin(unit);
@@ -79,11 +78,16 @@ class DartUnitHoverComputer {
     var parent = node.parent;
     var grandParent = parent?.parent;
 
-    if (parent is NamedType && grandParent is ConstructorName && grandParent.parent is InstanceCreationExpression) {
+    if (parent is NamedType &&
+        grandParent is ConstructorName &&
+        grandParent.parent is InstanceCreationExpression) {
       node = grandParent.parent;
-    } else if (parent is ConstructorName && grandParent is InstanceCreationExpression) {
+    } else if (parent is ConstructorName &&
+        grandParent is InstanceCreationExpression) {
       node = grandParent;
-    } else if (node is SimpleIdentifier && parent is ConstructorDeclaration && parent.name != null) {
+    } else if (node is SimpleIdentifier &&
+        parent is ConstructorDeclaration &&
+        parent.name != null) {
       node = parent;
     }
 
@@ -102,7 +106,8 @@ class DartUnitHoverComputer {
       HoverInformation hover;
 
       if (node is InstanceCreationExpression) {
-        hover = HoverInformation(node.constructorName.offset, node.constructorName.length);
+        hover = HoverInformation(
+            node.constructorName.offset, node.constructorName.length);
       } else if (node is ConstructorDeclaration) {
         var offset = node.returnType.offset;
         var end = node.name?.end ?? node.returnType.end;
@@ -124,7 +129,9 @@ class DartUnitHoverComputer {
         var description = elementDisplayString(element);
         hover.elementDescription = description;
 
-        if (description != null && node is InstanceCreationExpression && node.keyword == null) {
+        if (description != null &&
+            node is InstanceCreationExpression &&
+            node.keyword == null) {
           var prefix = node.isConst ? '(const) ' : '(new) ';
           hover.elementDescription = prefix + description;
         }
@@ -133,7 +140,8 @@ class DartUnitHoverComputer {
         hover.isDeprecated = element.hasDeprecated;
 
         if (element.enclosingElement is! ExecutableElement) {
-          var containingClass = element.thisOrAncestorOfType<InterfaceElement>();
+          var containingClass =
+              element.thisOrAncestorOfType<InterfaceElement>();
 
           if (containingClass != null && containingClass != element) {
             hover.containingClassDescription = containingClass.displayName;
@@ -147,8 +155,10 @@ class DartUnitHoverComputer {
 
             if (uri.isScheme('file') && analysisSession != null) {
               var context = analysisSession.resourceProvider.pathContext;
-              var projectRootDir = analysisSession.analysisContext.contextRoot.root.path;
-              var relativePath = context.relative(context.fromUri(uri), from: projectRootDir);
+              var projectRootDir =
+                  analysisSession.analysisContext.contextRoot.root.path;
+              var relativePath =
+                  context.relative(context.fromUri(uri), from: projectRootDir);
 
               if (context.style == path.Style.windows) {
                 var pathList = context.split(relativePath);
@@ -164,7 +174,8 @@ class DartUnitHoverComputer {
           }
         }
 
-        hover.documentation = computePreferredDocumentation(dartdocInfo, element, documentationPreference);
+        hover.documentation =
+            computePreferredDocumentation(dartdocInfo, element, preference);
       }
 
       if (node is Expression) {
@@ -174,7 +185,8 @@ class DartUnitHoverComputer {
       var parent = node.parent;
       DartType? staticType;
 
-      if (node is Expression && (element == null || element is VariableElement)) {
+      if (node is Expression &&
+          (element == null || element is VariableElement)) {
         staticType = _getTypeOfDeclarationOrReference(node);
       } else if (element is VariableElement) {
         staticType = element.type;
@@ -257,7 +269,7 @@ class DartUnitHoverComputer {
         content.writeln('---');
       }
 
-      content.writeln(cleanDocumentation(hover.documentation));
+      content.writeln(hover.documentation);
     }
 
     return content.toString().trimRight();
@@ -290,12 +302,18 @@ class DartUnitHoverComputer {
     // Look for documentation comments of overridden members
     var overridden = findOverriddenElements(element);
 
-    for (var candidate in [element, ...overridden.superElements, ...overridden.interfaceElements]) {
+    for (var candidate in [
+      element,
+      ...overridden.superElements,
+      ...overridden.interfaceElements
+    ]) {
       if (candidate.documentationComment != null) {
         documentedElement = candidate;
         break;
       }
-      if (documentedGetter == null && candidate is PropertyAccessorElement && candidate.isSetter) {
+      if (documentedGetter == null &&
+          candidate is PropertyAccessorElement &&
+          candidate.isSetter) {
         var getter = candidate.correspondingGetter;
         if (getter != null && getter.documentationComment != null) {
           documentedGetter = getter;
@@ -316,10 +334,12 @@ class DartUnitHoverComputer {
       return null;
     }
 
-    var result = dartdocInfo.processDartdoc(rawDoc, includeSummary: includeSummary);
+    var result =
+        dartdocInfo.processDartdoc(rawDoc, includeSummary: includeSummary);
     var documentedElementClass = documentedElement.enclosingElement;
 
-    if (documentedElementClass != null && documentedElementClass != element.enclosingElement) {
+    if (documentedElementClass != null &&
+        documentedElementClass != element.enclosingElement) {
       var documentedClass = documentedElementClass.displayName;
       result.full = '${result.full}\n\nCopied from `$documentedClass`.';
     }
@@ -420,11 +440,16 @@ class OverriddenElementsFinder {
     List<ElementKind> kinds;
 
     if (seed is FieldElement) {
-      kinds = <ElementKind>[ElementKind.GETTER, if (!seed.isFinal) ElementKind.SETTER];
+      kinds = <ElementKind>[
+        ElementKind.GETTER,
+        if (!seed.isFinal) ElementKind.SETTER
+      ];
     } else if (seed is MethodElement) {
       kinds = const <ElementKind>[ElementKind.METHOD];
     } else if (seed is PropertyAccessorElement) {
-      kinds = seed.isGetter ? const <ElementKind>[ElementKind.GETTER] : const <ElementKind>[ElementKind.SETTER];
+      kinds = seed.isGetter
+          ? const <ElementKind>[ElementKind.GETTER]
+          : const <ElementKind>[ElementKind.SETTER];
     } else {
       kinds = const <ElementKind>[];
     }
@@ -432,7 +457,8 @@ class OverriddenElementsFinder {
     return OverriddenElementsFinder._(seed, library, class_, name, kinds);
   }
 
-  OverriddenElementsFinder._(this.seed, this.library, this.klass, this.name, this.kinds);
+  OverriddenElementsFinder._(
+      this.seed, this.library, this.klass, this.name, this.kinds);
 
   final Element seed;
 

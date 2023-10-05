@@ -1,26 +1,43 @@
+import 'dart:async';
 import 'dart:js_interop';
 
-import 'package:analyzer_js/file_system/file_system.dart';
+import 'package:analyzer/file_system/file_system.dart';
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
-import 'package:web/web.dart';
+import 'package:dartpad/dom.dart';
 
-Future<Folder> initApp(ResourceProvider resourceProvider) async {
-  var responsePromise = window.fetch('archives/app.tar.bz'.toJS);
-  var response = await (responsePromise.toDart as Future<Response>);
-  var bufferPromise = response.arrayBuffer();
-  var buffer = await (bufferPromise.toDart as Future<JSArrayBuffer>);
-  var bytes = buffer.toDart.asUint8List();
-  var tarBytes = BZip2Decoder().decodeBytes(bytes);
-  var archive = TarDecoder().decodeBytes(tarBytes);
+Future<Folder> initApp(ResourceProvider resourceProvider) {
+  var completer = Completer<Folder>();
 
-  var app = resourceProvider.getFolder('/app');
+  void onBuffer(JSArrayBuffer buffer) {
+    var bytes = buffer.toDart.asUint8List();
 
-  for (var archiveFile in archive.files) {
-    if (archiveFile.isFile) {
-      var file = app.getChildAssumingFile(archiveFile.name);
-      file.writeAsBytesSync(archiveFile.content as List<int>);
+    var tarBytes = BZip2Decoder().decodeBytes(bytes);
+    var archive = TarDecoder().decodeBytes(tarBytes);
+
+    var app = resourceProvider.getFolder('/app');
+
+    for (var archiveFile in archive.files) {
+      if (archiveFile.isFile) {
+        var file = app.getChildAssumingFile(archiveFile.name);
+        file.writeAsBytesSync(archiveFile.content as List<int>);
+      }
     }
+
+    completer.complete(app);
   }
 
-  return app;
+  void onError(JSAny reason) {
+    if (completer.isCompleted) {
+      return;
+    }
+
+    completer.completeError(reason.toJSBox);
+  }
+
+  void onResponse(Response response) {
+    response.arrayBuffer().then(onBuffer.toJS, onError.toJS);
+  }
+
+  self.fetch('archives/app.tar.bz'.toJS).then(onResponse.toJS, onError.toJS);
+  return completer.future;
 }

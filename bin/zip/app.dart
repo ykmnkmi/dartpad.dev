@@ -11,7 +11,7 @@ Future<void> main(List<String> arguments) async {
   var entities = example.listSync(recursive: true);
 
   var tar = TarFileEncoder();
-  var tarPath = 'web/archives/app.tar';
+  var tarPath = 'src/archives/app.tar';
   tar.create(tarPath);
 
   for (var entity in entities) {
