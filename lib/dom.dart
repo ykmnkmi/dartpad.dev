@@ -1,17 +1,6 @@
 import 'dart:js_interop';
 
 @JS()
-external WindowOrWorkerGlobalScope get self;
-
-@JS()
-@staticInterop
-final class WindowOrWorkerGlobalScope implements JSObject {}
-
-extension WindowOrWorkerGlobalScopeExtension on WindowOrWorkerGlobalScope {
-  external JSPromise fetch(JSString uri);
-}
-
-@JS()
 @staticInterop
 final class Response implements JSObject {}
 

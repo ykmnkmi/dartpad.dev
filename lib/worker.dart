@@ -101,7 +101,6 @@ Future<void> provideHover(
 ) async {
   try {
     var resolvedLibrary = await context.currentSession.getResolvedLibrary(path);
-    print(resolvedLibrary);
 
     if (resolvedLibrary is ResolvedLibraryResult) {
       var unit = resolvedLibrary.unitWithPath(path);
@@ -122,9 +121,9 @@ Future<void> provideHover(
             success: true.toJS,
             data: value.toJS,
           ));
-        }
 
-        return;
+          return;
+        }
       }
     }
 
