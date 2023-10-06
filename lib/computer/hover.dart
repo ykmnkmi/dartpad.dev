@@ -4,14 +4,14 @@
 
 // ignore_for_file: implementation_imports
 
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/syntactic_entity.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/source/line_info.dart';
-import 'package:analyzer/src/dart/ast/element_locator.dart';
-import 'package:analyzer/src/dart/ast/utilities.dart';
-import 'package:analyzer/src/dartdoc/dartdoc_directive_info.dart';
+import 'package:analyzer_js/dart/ast/ast.dart';
+import 'package:analyzer_js/dart/ast/syntactic_entity.dart';
+import 'package:analyzer_js/dart/element/element.dart';
+import 'package:analyzer_js/dart/element/type.dart';
+import 'package:analyzer_js/source/line_info.dart';
+import 'package:analyzer_js/src/dart/ast/element_locator.dart';
+import 'package:analyzer_js/src/dart/ast/utilities.dart';
+import 'package:analyzer_js/src/dartdoc/dartdoc_directive_info.dart';
 import 'package:path/path.dart' as path;
 
 enum DocumentationPreference {

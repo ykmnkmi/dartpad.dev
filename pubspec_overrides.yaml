@@ -1,0 +1,3 @@
+dependency_overrides:
+  analyzer_js:
+    path: packages/analyzer_js

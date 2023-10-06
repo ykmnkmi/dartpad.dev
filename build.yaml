@@ -1,10 +1,9 @@
-builders:
 targets:
   $default:
     builders:
       build_web_compilers:entrypoint:
         generate_for:
-          - web/main.dart
+          - lib/worker.dart
         options:
           native_null_assertions: false
           dart2js_args:
@@ -31,6 +30,6 @@ targets:
             # - --enable-asserts
             # - --no-minify
             # - --no-source-maps
-            - --omit-as-casts
+            # - --omit-as-casts
             - --server-mode
             # - --verbose

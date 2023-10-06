@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:js_interop';
 
-import 'package:analyzer/file_system/file_system.dart';
+import 'package:analyzer_js/file_system/file_system.dart';
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 import 'package:dartpad/dom.dart';
 

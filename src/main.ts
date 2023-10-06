@@ -24,7 +24,7 @@ const worker = new dartWorker();
 
 const main = async () => {
   try {
-    await new Promise<void>((resolve, reject) => {
+    let model = await new Promise<editor.ITextModel>((resolve, reject) => {
       worker.onmessage = (event: MessageEvent<string | undefined>) => {
         if (event.data) {
           let model = editor.createModel(event.data, 'dart');
@@ -36,7 +36,7 @@ const main = async () => {
             tabSize: 2,
           });
 
-          resolve();
+          resolve(model);
         } else {
           reject();
         }
@@ -55,7 +55,7 @@ const main = async () => {
         if (event.data.success) {
           promise.resolve(event.data.data);
         } else {
-          promise.reject();
+          promise.reject(event.data.data);
         }
       }
     };
@@ -77,16 +77,22 @@ const main = async () => {
             return;
           }
 
-          return { contents: [{ value: cleanDocumentation(response) }] };
+          return {
+            contents: [{ value: cleanDocumentation(response) }]
+          };
         } catch (error) {
-          return;
+          console.log(error);
         }
       },
     });
 
+    model.onDidChangeContent(async (event) => {
+      worker.postMessage({ id: -1, type: 'edit', changes: event.changes });
+    });
+
     document.querySelector('#loading')!.remove();
   } catch (error) {
-    document.querySelector('#loading')!.textContent = `${error}`;
+    document.querySelector('#loading')!.textContent = `<pre>${error}</pre>`;
   }
 };
 
