@@ -2,7 +2,10 @@ import 'monaco-editor/esm/vs/editor/edcore.main';
 
 import 'monaco-editor/esm/vs/basic-languages/dart/dart.contribution';
 
-import { editor, languages, CancellationToken, Position } from 'monaco-editor/esm/vs/editor/editor.api';
+import {
+  editor, languages,
+  CancellationToken, Position,
+} from 'monaco-editor/esm/vs/editor/editor.api';
 
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 
@@ -11,7 +14,7 @@ import dartWorker from './dartWorker?worker';
 import { cleanDocumentation } from './utils';
 
 self.MonacoEnvironment = {
-  getWorker(workerId: any, label: string) {
+  getWorker(workerID: any, label: string) {
     return new editorWorker();
   }
 };
@@ -24,7 +27,7 @@ const worker = new dartWorker();
 
 const main = async () => {
   try {
-    await new Promise<void>((resolve, reject) => {
+    let model = await new Promise<editor.ITextModel>((resolve, reject) => {
       worker.onmessage = (event: MessageEvent<string | undefined>) => {
         if (event.data) {
           let model = editor.createModel(event.data, 'dart');
@@ -36,7 +39,7 @@ const main = async () => {
             tabSize: 2,
           });
 
-          resolve();
+          resolve(model);
         } else {
           reject();
         }
@@ -46,7 +49,13 @@ const main = async () => {
     let messageMap = new Map<number, { resolve: Resolve, reject: Reject }>();
     let messageID = 0;
 
-    worker.onmessage = (event: MessageEvent<{ id: number, success: boolean | null, data: any }>) => {
+    worker.onmessage = (
+      event: MessageEvent<{
+        id: number,
+        success: boolean | null,
+        data: any,
+      }>,
+    ) => {
       let promise = messageMap.get(event.data.id);
 
       if (promise) {
@@ -55,20 +64,27 @@ const main = async () => {
         if (event.data.success) {
           promise.resolve(event.data.data);
         } else {
-          promise.reject();
+          promise.reject(event.data.data);
         }
       }
     };
 
     languages.registerHoverProvider('dart', {
-      async provideHover(model: editor.ITextModel, position: Position, token: CancellationToken): Promise<languages.Hover | undefined> {
+      async provideHover(
+        model: editor.ITextModel,
+        position: Position,
+        token: CancellationToken,
+      ): Promise<languages.Hover | undefined> {
         let currentMessageID = ++messageID;
 
         let promise = new Promise<string>((resolve, reject) => {
           messageMap.set(currentMessageID, { resolve, reject });
         })
 
-        worker.postMessage({ id: currentMessageID, type: 'hover', offset: model.getOffsetAt(position) });
+        worker.postMessage({
+          id: currentMessageID, type: 'hover',
+          offset: model.getOffsetAt(position),
+        });
 
         try {
           let response = await promise;
@@ -77,16 +93,22 @@ const main = async () => {
             return;
           }
 
-          return { contents: [{ value: cleanDocumentation(response) }] };
+          return {
+            contents: [{ value: cleanDocumentation(response) }]
+          };
         } catch (error) {
-          return;
+          console.log(error);
         }
       },
     });
 
+    model.onDidChangeContent(async (event) => {
+      worker.postMessage({ id: -1, type: 'edit', changes: event.changes });
+    });
+
     document.querySelector('#loading')!.remove();
   } catch (error) {
-    document.querySelector('#loading')!.textContent = `${error}`;
+    document.querySelector('#loading')!.textContent = `<pre>${error}</pre>`;
   }
 };
 

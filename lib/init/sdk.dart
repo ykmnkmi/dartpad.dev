@@ -1,40 +1,40 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:typed_data';
 
-import 'package:analyzer/file_system/file_system.dart';
-import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
-import 'package:dartpad/dom.dart';
+import 'package:archive/archive.dart';
+import 'package:dartpad/analyzer/file_system/file_system.dart';
 
 @JS()
-external JSPromise loadSdk();
+external JSPromise loadSdk(JSFunction onData, JSFunction onError);
 
 Future<Folder> initSdk(ResourceProvider resourceProvider) {
-  var completer = Completer<Folder>();
+  Completer<Folder> completer = Completer<Folder>();
 
-  void onBytes(JSUint8Array bytes) {
-    var tarBytes = BZip2Decoder().decodeBytes(bytes.toDart);
-    var archive = TarDecoder().decodeBytes(tarBytes);
+  void onData(JSUint8Array data) {
+    List<int> tarBytes = BZip2Decoder().decodeBytes(data.toDart);
+    Archive archive = TarDecoder().decodeBytes(tarBytes);
 
-    var app = resourceProvider.getFolder('/sdk');
+    Folder app = resourceProvider.getFolder('/sdk');
 
-    for (var archiveFile in archive.files) {
+    for (ArchiveFile archiveFile in archive.files) {
       if (archiveFile.isFile) {
-        var file = app.getChildAssumingFile(archiveFile.name);
-        file.writeAsBytesSync(archiveFile.content as List<int>);
+        File file = app.getChildAssumingFile(archiveFile.name);
+        file.writeAsBytesSync(archiveFile.content as Uint8List);
       }
     }
 
     completer.complete(app);
   }
 
-  void onError(JSAny reason) {
+  void onError(JSString reason) {
     if (completer.isCompleted) {
       return;
     }
 
-    completer.completeError(reason.toJSBox);
+    completer.completeError(reason.toDart);
   }
 
-  loadSdk().then(onBytes.toJS, onError.toJS);
+  loadSdk(onData.toJS, onError.toJS);
   return completer.future;
 }

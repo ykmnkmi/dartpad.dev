@@ -18,7 +18,7 @@ bool isFileSupported(String path) {
   var fileExtension = extension(path);
 
   if (fileExtension.isEmpty) {
-    return path.endsWith('README') ||  path.endsWith('OWNERS');
+    return path.endsWith('README') || path.endsWith('OWNERS');
   }
 
   return supportedFileExtensions.contains(fileExtension);

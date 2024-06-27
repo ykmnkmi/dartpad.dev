@@ -2,5 +2,8 @@
 build/
 node_modules/
 src/worker.dart.*
+web/*.js
+web/*.js.*
 package-lock.json
+pnpm-lock.yaml
 pubspec.lock

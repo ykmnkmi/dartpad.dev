@@ -1,24 +1,17 @@
 import 'dart:js_interop';
 
-@JS()
-@staticInterop
-sealed class EditorData implements JSObject {
+extension type EditorData._(JSObject _) implements JSObject {
   external factory EditorData(
     JSNumber id,
     JSString type,
   );
-}
 
-extension EditorEventExtension on EditorData {
   external JSNumber get id;
 
   external JSString get type;
 }
 
-@JS()
-@anonymous
-@staticInterop
-final class EditorResponse implements JSObject {
+extension type EditorResponse._(JSObject _) implements JSObject {
   external factory EditorResponse({
     required JSNumber id,
     JSBoolean? success,
@@ -26,16 +19,36 @@ final class EditorResponse implements JSObject {
   });
 }
 
-@JS()
-@staticInterop
-final class HoverData implements EditorData {
+extension type ModelContentChange._(JSObject _) implements JSObject {
+  @JS('rangeOffset')
+  external JSNumber get offset;
+
+  JSNumber get end {
+    return offset.add(length) as JSNumber;
+  }
+
+  @JS('rangeLength')
+  external JSNumber get length;
+
+  external JSString get text;
+}
+
+extension type EditData._(JSObject _) implements EditorData {
+  external factory EditData(
+    JSNumber id,
+    JSString type,
+    JSArray<ModelContentChange> changes,
+  );
+
+  external JSArray<ModelContentChange> get changes;
+}
+
+extension type HoverData._(JSObject _) implements EditorData {
   external factory HoverData(
     JSNumber id,
     JSString type,
     JSNumber offset,
   );
-}
 
-extension HoverEventExtension on HoverData {
   external JSNumber get offset;
 }

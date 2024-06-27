@@ -1,10 +1,9 @@
-builders:
 targets:
   $default:
     builders:
       build_web_compilers:entrypoint:
         generate_for:
-          - web/main.dart
+          - lib/worker.dart
         options:
           native_null_assertions: false
           dart2js_args:
@@ -17,20 +16,20 @@ targets:
 
             # - -O2
             # - --minify
-            - --lax-runtime-type-to-string
-            - --omit-late-names
+            # - --lax-runtime-type-to-string
+            # - --omit-late-names
 
             # - -O3
-            - --no-native-null-assertions
-            - --omit-implicit-checks
+            # - --no-native-null-assertions
+            # - --omit-implicit-checks
 
-            # - -O4
-            - --trust-primitives
+            - -O4
+            # - --trust-primitives
 
             # - --csp
             # - --enable-asserts
             # - --no-minify
             # - --no-source-maps
             - --omit-as-casts
-            - --server-mode
+            # - --server-mode
             # - --verbose

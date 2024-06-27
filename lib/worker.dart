@@ -3,19 +3,20 @@
 import 'dart:async';
 import 'dart:js_interop';
 
-import 'package:analyzer/dart/analysis/analysis_context.dart';
-import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/file_system/memory_file_system.dart';
-import 'package:analyzer/src/dart/analysis/byte_store.dart';
-import 'package:analyzer/src/dartdoc/dartdoc_directive_info.dart';
-import 'package:analyzer/src/services/available_declarations.dart';
+import 'package:dartpad/analyzer/dart/analysis/analysis_context.dart';
+import 'package:dartpad/analyzer/dart/analysis/analysis_context_collection.dart';
+import 'package:dartpad/analyzer/dart/analysis/results.dart';
+import 'package:dartpad/analyzer/file_system/file_system.dart';
+import 'package:dartpad/analyzer/file_system/memory_file_system.dart';
+import 'package:dartpad/analyzer/src/dart/analysis/byte_store.dart';
+import 'package:dartpad/analyzer/src/dartdoc/dartdoc_directive_info.dart';
+import 'package:dartpad/analyzer/src/services/available_declarations.dart';
 import 'package:dartpad/computer/hover.dart';
-import 'package:dartpad/dom.dart';
 import 'package:dartpad/editor.dart';
 import 'package:dartpad/init/app.dart';
 import 'package:dartpad/init/sdk.dart';
-import 'package:path/path.dart' as path show posix;
+import 'package:meta/dart2js.dart';
+import 'package:web/web.dart' show MessageEvent;
 
 @JS('onmessage')
 external JSFunction onMessage;
@@ -23,16 +24,22 @@ external JSFunction onMessage;
 @JS()
 external JSVoid postMessage(JSAny? message);
 
+@noInline
+void postResponse(JSNumber id, {JSBoolean? success, JSAny? data}) {
+  postMessage(EditorResponse(id: id, success: success, data: data));
+}
+
 Future<void> main() async {
-  var resourceProvider = MemoryResourceProvider(context: path.posix);
-  await initSdk(resourceProvider);
-  await initApp(resourceProvider);
+  MemoryResourceProvider provider = MemoryResourceProvider();
 
-  var appFolder = resourceProvider.getFolder('/app');
-  var mainFile = appFolder.getChildAssumingFile('lib/main.dart');
+  await initSdk(provider);
+  await initApp(provider);
 
-  var collection = AnalysisContextCollection(
-    resourceProvider: resourceProvider,
+  Folder appFolder = provider.getFolder('/app');
+  File mainFile = appFolder.getChildAssumingFile('lib/main.dart');
+
+  AnalysisContextCollection collection = AnalysisContextCollection(
+    resourceProvider: provider,
     includedPaths: <String>['/app'],
     sdkPath: '/sdk',
   );
@@ -41,96 +48,81 @@ Future<void> main() async {
     postMessage(null);
   }
 
-  var context = collection.contexts.first;
+  AnalysisContext context = collection.contexts.first;
 
-  var memoryByteStore = MemoryByteStore();
-  var declarationsTracker =
-      DeclarationsTracker(memoryByteStore, resourceProvider);
-  declarationsTracker.addContext(context);
+  MemoryByteStore byteStore = MemoryByteStore();
+  DeclarationsTracker tracker = DeclarationsTracker(byteStore, provider);
+  tracker.addContext(context);
 
   DartdocDirectiveInfo dartdocInfo;
 
-  if (declarationsTracker.getContext(context) case var declarationContext?) {
+  if (tracker.getContext(context) case var declarationContext?) {
     dartdocInfo = declarationContext.dartdocDirectiveInfo;
   } else {
     dartdocInfo = DartdocDirectiveInfo();
   }
 
-  // void onDidChangeContent(ModelContentChangedEvent event) {
-  //   if (event.changes.isEmpty) {
-  //     return;
-  //   }
+  Future<void> editFile(EditData data) async {
+    try {
+      for (ModelContentChange change in data.changes.toDart) {
+        int start = change.offset.toDartInt;
+        int end = change.end.toDartInt;
 
-  //   mainFile.writeAsStringSync(model.getValue());
-  //   context.changeFile(mainFile.path);
-  //   context.applyPendingFileChanges();
-  // }
+        String content = mainFile.readAsStringSync().replaceRange(start, end, change.text.toDart);
 
-  var eventController = StreamController<MessageEvent>();
-  onMessage = eventController.add.toJS;
-  postMessage(mainFile.readAsStringSync().toJS);
+        mainFile.writeAsStringSync(content);
+        context.changeFile(mainFile.path);
+      }
 
-  await for (var event in eventController.stream) {
-    var data = event.data as EditorData;
-    var type = data.type.toDart;
-
-    if (type == 'hover') {
-      var hoverData = data as HoverData;
-
-      provideHover(
-        hoverData.id,
-        context,
-        dartdocInfo,
-        mainFile.path,
-        hoverData.offset.toDartInt,
-      );
-    } else {
-      postMessage(EditorResponse(
-        id: data.id,
-      ));
+      await context.applyPendingFileChanges();
+    } catch (error, trace) {
+      print(error);
+      print(trace);
     }
   }
-}
 
-Future<void> provideHover(
-  JSNumber id,
-  AnalysisContext context,
-  DartdocDirectiveInfo dartdocInfo,
-  String path,
-  int offset,
-) async {
-  try {
-    var resolvedLibrary = await context.currentSession.getResolvedLibrary(path);
+  Future<void> provideHover(HoverData data) async {
+    try {
+      SomeResolvedUnitResult unit = await context.currentSession.getResolvedUnit(mainFile.path);
 
-    if (resolvedLibrary is ResolvedLibraryResult) {
-      var unit = resolvedLibrary.unitWithPath(path);
-
-      if (unit != null) {
-        var hoverComputer = DartUnitHoverComputer(
+      if (unit is ResolvedUnitResult) {
+        DartUnitHoverComputer hoverComputer = DartUnitHoverComputer(
           dartdocInfo,
           unit.unit,
-          offset,
-          preference: DocumentationPreference.full,
+          data.offset.toDartInt,
+          preference: DocumentationPreference.summary,
         );
 
-        var value = hoverComputer.compute();
+        String? value = hoverComputer.compute();
 
         if (value != null) {
-          postMessage(EditorResponse(
-            id: id,
-            success: true.toJS,
-            data: value.toJS,
-          ));
-
+          postResponse(data.id, success: true.toJS, data: value.toJS);
           return;
         }
       }
-    }
 
-    postMessage(EditorResponse(id: id));
-  } catch (error, trace) {
-    print(error);
-    print(trace);
-    postMessage(EditorResponse(id: id));
+      postResponse(data.id);
+    } catch (error, trace) {
+      print(error);
+      print(trace);
+      postResponse(data.id);
+    }
+  }
+
+  StreamController<MessageEvent> eventController = StreamController<MessageEvent>();
+  onMessage = eventController.add.toJS;
+  postMessage(mainFile.readAsStringSync().toJS);
+
+  await for (MessageEvent event in eventController.stream) {
+    EditorData data = event.data as EditorData;
+    String type = data.type.toDart;
+
+    if (type == 'edit') {
+      await editFile(data as EditData);
+    } else if (type == 'hover') {
+      await provideHover(data as HoverData);
+    } else {
+      postResponse(data.id);
+    }
   }
 }

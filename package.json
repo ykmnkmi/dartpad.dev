@@ -3,11 +3,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:dart": "dart compile js --minify --lax-runtime-type-to-string --omit-late-names --omit-implicit-checks --trust-primitives --server-mode --output=src/worker.dart.js lib/worker.dart",
-    "build:dart:dev": "dart compile js --enable-asserts --disable-inlining --server-mode --output=src/worker.dart.js lib/worker.dart"
+    "build:worker": "dart compile js --minify --lax-runtime-type-to-string --omit-late-names --omit-implicit-checks --trust-primitives --server-mode --output=src/worker.dart.js lib/worker.dart",
+    "build:worker:dev": "dart compile js --disable-inlining --server-mode --output=src/worker.dart.js lib/worker.dart"
   },
   "devDependencies": {
-    "monaco-editor": "^0.38.0",
-    "vite": "^4.4.10"
+    "monaco-editor": "^0.49.0",
+    "vite": "^4.5.3"
   }
 }

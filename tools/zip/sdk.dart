@@ -6,7 +6,7 @@ import 'package:path/path.dart' show dirname, join, relative;
 import 'types.dart';
 
 Future<void> main(List<String> arguments) async {
-  var sdkPath = dirname(dirname(Platform.executable));
+  var sdkPath = dirname(dirname(Platform.resolvedExecutable));
   var libPath = join(sdkPath, 'lib');
 
   var lib = Directory(libPath);
