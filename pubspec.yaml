@@ -1,6 +1,6 @@
 name: dartpad
 description: DartPad with Monaco Editor.
-version: 1.0.0-13.dev
+version: 1.0.0-14.dev
 publish_to: none
 
 environment:
@@ -17,6 +17,7 @@ dependencies:
   package_config: ^2.1.0
   path: ^1.9.0
   pub_semver: ^2.1.4
+  source_span: ^1.10.0
   web: ^0.5.1
   yaml: ^3.1.2
 

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:dartpad/analyzer/dart/analysis/session.dart';
 import 'package:dartpad/analyzer/dart/ast/ast.dart';
 import 'package:dartpad/analyzer/dart/ast/syntactic_entity.dart';
 import 'package:dartpad/analyzer/dart/element/element.dart';
@@ -10,7 +11,7 @@ import 'package:dartpad/analyzer/source/line_info.dart';
 import 'package:dartpad/analyzer/src/dart/ast/element_locator.dart';
 import 'package:dartpad/analyzer/src/dart/ast/utilities.dart';
 import 'package:dartpad/analyzer/src/dartdoc/dartdoc_directive_info.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' show posix;
 
 enum DocumentationPreference {
   none,
@@ -35,7 +36,7 @@ final class DartUnitHoverComputer {
   final DocumentationPreference preference;
 
   String? compute() {
-    var node = NodeLocator(offset).searchWithin(unit);
+    AstNode? node = NodeLocator(offset).searchWithin(unit);
 
     if (node == null) {
       return null;
@@ -73,8 +74,8 @@ final class DartUnitHoverComputer {
       return null;
     }
 
-    var parent = node.parent;
-    var grandParent = parent?.parent;
+    AstNode? parent = node.parent;
+    AstNode? grandParent = parent?.parent;
 
     if (parent is NamedType && grandParent is ConstructorName && grandParent.parent is InstanceCreationExpression) {
       node = grandParent.parent;
@@ -100,15 +101,15 @@ final class DartUnitHoverComputer {
       if (node is InstanceCreationExpression) {
         hover = HoverInformation(node.constructorName.offset, node.constructorName.length);
       } else if (node is ConstructorDeclaration) {
-        var offset = node.returnType.offset;
-        var end = node.name?.end ?? node.returnType.end;
-        var length = end - node.returnType.offset;
+        int offset = node.returnType.offset;
+        int end = node.name?.end ?? node.returnType.end;
+        int length = end - node.returnType.offset;
         hover = HoverInformation(offset, length);
       } else {
         hover = HoverInformation(locationEntity.offset, locationEntity.length);
       }
 
-      var element = ElementLocator.locate(node);
+      Element? element = ElementLocator.locate(node);
 
       if (element != null) {
         if (element is PropertyAccessorElement) {
@@ -117,11 +118,11 @@ final class DartUnitHoverComputer {
           }
         }
 
-        var description = elementDisplayString(element);
+        String? description = elementDisplayString(element);
         hover.elementDescription = description;
 
         if (description != null && node is InstanceCreationExpression && node.keyword == null) {
-          var prefix = node.isConst ? '(const) ' : '(new) ';
+          String prefix = node.isConst ? '(const) ' : '(new) ';
           hover.elementDescription = prefix + description;
         }
 
@@ -129,29 +130,22 @@ final class DartUnitHoverComputer {
         hover.isDeprecated = element.hasDeprecated;
 
         if (element.enclosingElement is! ExecutableElement) {
-          var containingClass = element.thisOrAncestorOfType<InterfaceElement>();
+          InterfaceElement? containingClass = element.thisOrAncestorOfType<InterfaceElement>();
 
           if (containingClass != null && containingClass != element) {
             hover.containingClassDescription = containingClass.displayName;
           }
 
-          var library = element.library;
+          LibraryElement? library = element.library;
 
           if (library != null) {
-            var uri = library.source.uri;
-            var analysisSession = unit.declaredElement?.session;
+            Uri uri = library.source.uri;
+            AnalysisSession? analysisSession = unit.declaredElement?.session;
 
             if (uri.isScheme('file') && analysisSession != null) {
-              var context = analysisSession.resourceProvider.pathContext;
-              var projectRootDir = analysisSession.analysisContext.contextRoot.root.path;
-              var relativePath = context.relative(context.fromUri(uri), from: projectRootDir);
-
-              if (context.style == path.Style.windows) {
-                var pathList = context.split(relativePath);
-                hover.containingLibraryName = pathList.join('/');
-              } else {
-                hover.containingLibraryName = relativePath;
-              }
+              String projectRootDir = analysisSession.analysisContext.contextRoot.root.path;
+              String relativePath = posix.relative(posix.fromUri(uri), from: projectRootDir);
+              hover.containingLibraryName = relativePath;
             } else {
               hover.containingLibraryName = uri.toString();
             }
@@ -167,7 +161,7 @@ final class DartUnitHoverComputer {
         hover.parameter = elementDisplayString(node.staticParameterElement);
       }
 
-      var parent = node!.parent;
+      AstNode? parent = node!.parent;
       DartType? staticType;
 
       if (node is Expression && (element == null || element is VariableElement)) {
@@ -213,12 +207,12 @@ final class DartUnitHoverComputer {
       return null;
     }
 
-    var content = StringBuffer();
+    StringBuffer content = StringBuffer();
 
     // Description + Types.
-    var elementDescription = hover.elementDescription;
-    var staticType = hover.staticType;
-    var isDeprecated = hover.isDeprecated ?? false;
+    String? elementDescription = hover.elementDescription;
+    String? staticType = hover.staticType;
+    bool isDeprecated = hover.isDeprecated ?? false;
 
     if (elementDescription != null) {
       content.writeln('```dart');
@@ -239,7 +233,7 @@ final class DartUnitHoverComputer {
     }
 
     // Source library.
-    var containingLibraryName = hover.containingLibraryName;
+    String? containingLibraryName = hover.containingLibraryName;
 
     if (containingLibraryName != null && containingLibraryName.isNotEmpty) {
       content
@@ -284,15 +278,17 @@ final class DartUnitHoverComputer {
     Element? documentedGetter;
 
     // Look for documentation comments of overridden members
-    var overridden = findOverriddenElements(element);
+    OverriddenElements overridden = findOverriddenElements(element);
 
-    for (var candidate in [element, ...overridden.superElements, ...overridden.interfaceElements]) {
+    for (Element candidate in <Element>[element, ...overridden.superElements, ...overridden.interfaceElements]) {
       if (candidate.documentationComment != null) {
         documentedElement = candidate;
         break;
       }
+
       if (documentedGetter == null && candidate is PropertyAccessorElement && candidate.isSetter) {
-        var getter = candidate.correspondingGetter;
+        PropertyAccessorElement? getter = candidate.correspondingGetter;
+
         if (getter != null && getter.documentationComment != null) {
           documentedGetter = getter;
         }
@@ -306,17 +302,17 @@ final class DartUnitHoverComputer {
       return null;
     }
 
-    var rawDoc = documentedElement.documentationComment;
+    String? rawDoc = documentedElement.documentationComment;
 
     if (rawDoc == null) {
       return null;
     }
 
-    var result = dartdocInfo.processDartdoc(rawDoc, includeSummary: includeSummary);
-    var documentedElementClass = documentedElement.enclosingElement;
+    Documentation result = dartdocInfo.processDartdoc(rawDoc, includeSummary: includeSummary);
+    Element? documentedElementClass = documentedElement.enclosingElement;
 
     if (documentedElementClass != null && documentedElementClass != element.enclosingElement) {
-      var documentedClass = documentedElementClass.displayName;
+      String documentedClass = documentedElementClass.displayName;
       result.full = '${result.full}\n\nCopied from `$documentedClass`.';
     }
 
@@ -334,7 +330,7 @@ final class DartUnitHoverComputer {
       return null;
     }
 
-    var doc = computeDocumentation(
+    Documentation? doc = computeDocumentation(
       dartdocInfo,
       element,
       includeSummary: preference == DocumentationPreference.summary,
@@ -345,14 +341,14 @@ final class DartUnitHoverComputer {
 
   static DartType? _getTypeOfDeclarationOrReference(Expression node) {
     if (node is SimpleIdentifier) {
-      var element = node.staticElement;
+      Element? element = node.staticElement;
 
       if (element is VariableElement) {
         if (node.inDeclarationContext()) {
           return element.type;
         }
 
-        var parent = node.parent?.parent;
+        AstNode? parent = node.parent?.parent;
 
         if (parent is NamedExpression && parent.name.label == node) {
           return element.type;
@@ -363,7 +359,7 @@ final class DartUnitHoverComputer {
   }
 }
 
-class HoverInformation {
+final class HoverInformation {
   HoverInformation(this.offset, this.length);
 
   int offset;
@@ -397,7 +393,7 @@ OverriddenElements findOverriddenElements(Element element) {
   return OverriddenElements(element, <Element>[], <Element>[]);
 }
 
-class OverriddenElements {
+final class OverriddenElements {
   OverriddenElements(this.element, this.superElements, this.interfaceElements);
 
   final Element element;
@@ -407,11 +403,11 @@ class OverriddenElements {
   final List<Element> interfaceElements;
 }
 
-class OverriddenElementsFinder {
+final class OverriddenElementsFinder {
   factory OverriddenElementsFinder(Element seed) {
-    var class_ = seed.enclosingElement as InterfaceElement;
-    var library = class_.library;
-    var name = seed.displayName;
+    InterfaceElement class_ = seed.enclosingElement as InterfaceElement;
+    LibraryElement library = class_.library;
+    String name = seed.displayName;
 
     List<ElementKind> kinds;
 
@@ -466,14 +462,14 @@ class OverriddenElementsFinder {
     }
 
     if (checkType) {
-      var element = lookupMember(klass);
+      Element? element = lookupMember(klass);
 
       if (element != null && !interfaceElements.contains(element)) {
         interfaceElements.add(element);
       }
     }
 
-    for (var interfaceType in klass.interfaces) {
+    for (InterfaceType interfaceType in klass.interfaces) {
       addInterfaceOverrides(interfaceType.element, true);
     }
 
@@ -490,7 +486,7 @@ class OverriddenElementsFinder {
     }
 
     if (withThisType) {
-      var element = lookupMember(class_);
+      Element? element = lookupMember(class_);
 
       if (element != null && !superElements.contains(element)) {
         superElements.add(element);
@@ -499,12 +495,12 @@ class OverriddenElementsFinder {
 
     addSuperOverrides(class_.supertype?.element);
 
-    for (var mixin_ in class_.mixins) {
+    for (InterfaceType mixin_ in class_.mixins) {
       addSuperOverrides(mixin_.element);
     }
 
     if (class_ is MixinElement) {
-      for (var constraint in class_.superclassConstraints) {
+      for (InterfaceType constraint in class_.superclassConstraints) {
         addSuperOverrides(constraint.element);
       }
     }
