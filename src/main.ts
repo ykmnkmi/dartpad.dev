@@ -64,7 +64,7 @@ const main = async () => {
       async provideHover(model: editor.ITextModel, position: Position, token: CancellationToken): Promise<languages.Hover | undefined> {
         let currentMessageID = ++messageID;
 
-        let promise = new Promise<string>((resolve, reject) => {
+        let promise = new Promise<languages.Hover | undefined>((resolve, reject) => {
           messageMap.set(currentMessageID, { resolve, reject });
         })
 
@@ -77,7 +77,7 @@ const main = async () => {
             return;
           }
 
-          return { contents: [{ value: cleanDocumentation(response) }] };
+          return response;
         } catch (error) {
           return;
         }
