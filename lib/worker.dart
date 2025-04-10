@@ -7,10 +7,11 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/file_system/memory_file_system.dart';
-import 'package:analyzer/src/dart/analysis/byte_store.dart';
+import 'package:analyzer/src/dart/analysis/driver_based_analysis_context.dart';
 import 'package:analyzer/src/dartdoc/dartdoc_directive_info.dart';
-import 'package:analyzer/src/services/available_declarations.dart';
-import 'package:dartpad/computer/hover.dart';
+import 'package:dartpad/computer/computer_documentation.dart';
+import 'package:dartpad/computer/computer_hover.dart';
+import 'package:dartpad/computer/hover_information.dart';
 import 'package:dartpad/dom.dart';
 import 'package:dartpad/editor.dart';
 import 'package:dartpad/init/app.dart';
@@ -41,17 +42,12 @@ Future<void> main() async {
     postMessage(null);
   }
 
-  var context = collection.contexts.first;
-
-  var memoryByteStore = MemoryByteStore();
-  var declarationsTracker =
-      DeclarationsTracker(memoryByteStore, resourceProvider);
-  declarationsTracker.addContext(context);
+  var context = collection.contextFor(mainFile.path);
 
   DartdocDirectiveInfo dartdocInfo;
 
-  if (declarationsTracker.getContext(context) case var declarationContext?) {
-    dartdocInfo = declarationContext.dartdocDirectiveInfo;
+  if (context is DriverBasedAnalysisContext) {
+    dartdocInfo = context.driver.dartdocDirectiveInfo;
   } else {
     dartdocInfo = DartdocDirectiveInfo();
   }
@@ -85,9 +81,7 @@ Future<void> main() async {
         hoverData.offset.toDartInt,
       );
     } else {
-      postMessage(EditorResponse(
-        id: data.id,
-      ));
+      postMessage(EditorResponse(id: data.id));
     }
   }
 }
@@ -110,17 +104,19 @@ Future<void> provideHover(
           dartdocInfo,
           unit.unit,
           offset,
-          preference: DocumentationPreference.full,
+          documentationPreference: DocumentationPreference.full,
         );
 
-        var value = hoverComputer.compute();
+        var hoverInformation = hoverComputer.compute();
 
-        if (value != null) {
-          postMessage(EditorResponse(
-            id: id,
-            success: true.toJS,
-            data: value.toJS,
-          ));
+        if (hoverInformation != null) {
+          postMessage(
+            EditorResponse(
+              id: id,
+              success: true.toJS,
+              data: hoverInformation.toHover(unit.lineInfo),
+            ),
+          );
 
           return;
         }

@@ -3,4 +3,5 @@ build/
 node_modules/
 src/worker.dart.*
 package-lock.json
+pnpm-lock.yaml
 pubspec.lock

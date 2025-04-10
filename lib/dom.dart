@@ -1,18 +1,10 @@
 import 'dart:js_interop';
 
-@JS()
-@staticInterop
-final class Response implements JSObject {}
-
-extension ResponseExtension on Response {
+extension type Response._(JSObject _) implements JSObject {
   external JSPromise arrayBuffer();
 }
 
-@JS()
-@staticInterop
-final class MessageEvent implements JSObject {}
-
-extension MessageEventExtension on MessageEvent {
+extension type MessageEvent._(JSObject _) implements JSObject {
   external JSAny get data;
 }
 
